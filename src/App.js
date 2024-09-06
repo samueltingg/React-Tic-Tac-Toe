@@ -31,11 +31,8 @@ function calculateWinner(squares) {
   return null;
 }
 
+// "squares" -> array representing 9 squares on tictactoe
 function Board({xIsNext, squares, onPlay}) {
-
-  // const [xIsNext, setXIsNext] = useState(true);
-  // const [squares, setSquares] = useState(Array(9).fill(null)); // sets var "squares" to an array with 9 elements, all with value of "null"
-  
   const winner = calculateWinner(squares);
   let status = 'Next Player is X';
   if (winner) {
@@ -54,8 +51,6 @@ function Board({xIsNext, squares, onPlay}) {
     } else {
       newSquares[i] = "O";
     }
-    // setSquares(newSquares);
-    // setXIsNext(!xIsNext);
     onPlay(newSquares);
   }
   return (
@@ -80,15 +75,40 @@ function Board({xIsNext, squares, onPlay}) {
   );
 }
 
-function Game() {
-  const [xIsNext, setXIsNext] = useState(true);
-  const [history, setHistory] = useState([Array(9).fill(null)]);
-  const currentSquare = history[history.length - 1];
+// TODO: when a square that was initially clicked is clicked again, it overwrites it
 
+function Game() {
+  const [history, setHistory] = useState([Array(9).fill(null)]);
+  const [currentMove, setCurrentMove] = useState(0);
+  const xIsNext = currentMove % 2 === 0;
+  const currentSquare = history[currentMove]; // !
+
+  // run when square is clicked
   function handlePlay(newSquares) {
-    setHistory([...history, newSquares]);
-    setXIsNext(!xIsNext);
+    
+    const newHistory = [...history.slice(0, currentMove + 1), newSquares];
+    setHistory(newHistory);
+    setCurrentMove(newHistory.length - 1); // !
   }
+
+  function jumpTo(move) {
+    setCurrentMove(move); // !
+  }
+  // use .map to transform history to array of react elements
+  const historyButtons = history.map((squares, i) => {
+    let description = '';
+    if (i == 0) {
+      description = "Go to game start";
+    } else if (i > 0) {
+      description = "Go to move #" + i;
+    }
+    return (
+      // link button to respective history
+      <li key={i}>
+        <button onClick={() => jumpTo(i)}>{description}</button>
+      </li>
+    )
+  })
 
   return (
     <div className="game">
@@ -96,7 +116,7 @@ function Game() {
         <Board xIsNext={xIsNext} squares={currentSquare} onPlay={handlePlay}/>
       </div>
       <div className="game-info">
-        <ol>{/*TODO*/}</ol>
+        <ol>{historyButtons}</ol>
       </div>
     </div>
   );
